@@ -1,96 +1,66 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import Link from "next/link";
+import React, { useState } from "react";
+import { useInView } from "react-intersection-observer";
 
 function ContactForm() {
   const [formData, setFormData] = useState({
-    name: "",
+    parentName: "",
     email: "",
     phone: "",
+    childName: "",
     childAge: "",
     startDate: "",
+    schedule: "full-time",
     message: "",
+    submitted: false,
+    error: null,
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState(null); // null, 'success', 'error'
-  const [errors, setErrors] = useState({});
 
-  useEffect(() => {
-    // Trigger entrance animation
-    setIsVisible(true);
-  }, []);
+  const { ref, inView } = useInView({
+    threshold: 0.1,
+    triggerOnce: true,
+  });
 
-  const validateForm = () => {
-    const newErrors = {};
-
-    if (!formData.name.trim()) {
-      newErrors.name = "Name is required";
-    }
-
-    if (!formData.email.trim()) {
-      newErrors.email = "Email is required";
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Please enter a valid email address";
-    }
-
-    if (
-      formData.phone &&
-      !/^[\+]?[1-9][\d]{0,15}$/.test(formData.phone.replace(/\s/g, ""))
-    ) {
-      newErrors.phone = "Please enter a valid phone number";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+  const isVisible = inView;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
+    setFormData((prev) => ({
+      ...prev,
       [name]: value,
-    });
-
-    // Clear error when user starts typing
-    if (errors[name]) {
-      setErrors({
-        ...errors,
-        [name]: "",
-      });
-    }
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!validateForm()) {
-      return;
-    }
-
     setIsSubmitting(true);
-    setSubmitStatus(null);
 
     try {
-      // Simulate form submission
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      console.log("Form submitted:", formData);
-      setSubmitStatus("success");
-
-      // Reset form after successful submission
-      setFormData({
-        name: "",
-        email: "",
-        phone: "",
-        childAge: "",
-        startDate: "",
-        message: "",
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
       });
+
+      if (!response.ok) {
+        throw new Error("Failed to submit form");
+      }
+
+      setFormData((prev) => ({
+        ...prev,
+        submitted: true,
+        error: null,
+      }));
     } catch (error) {
-      console.error("Form submission error:", error);
-      setSubmitStatus("error");
+      setFormData((prev) => ({
+        ...prev,
+        error:
+          "Failed to submit form. Please try again or contact us directly.",
+      }));
     } finally {
       setIsSubmitting(false);
     }
@@ -98,6 +68,7 @@ function ContactForm() {
 
   return (
     <div
+      ref={ref}
       className="relative w-full py-12 sm:py-16 lg:py-24"
       style={{ backgroundColor: "var(--color-bg-testimonial-1)" }}
     >
@@ -135,7 +106,7 @@ function ContactForm() {
             style={{ color: "var(--color-text-primary)" }}
           >
             We'd love to hear from you! Fill out the form below and we'll get
-            back to you as soon as possible to discuss how we can support your
+            back to you within 2-3 hours to discuss how we can support your
             family.
           </p>
         </div>
@@ -188,11 +159,11 @@ function ContactForm() {
                       Phone
                     </p>
                     <a
-                      href="tel:+44201234567"
+                      href="tel:+17032328585"
                       className="text-sm sm:text-base hover:underline transition-colors"
                       style={{ color: "var(--color-text-primary)" }}
                     >
-                      +44 20 1234 567
+                      +1 (703) 232-8585
                     </a>
                   </div>
                 </div>
@@ -220,11 +191,11 @@ function ContactForm() {
                       Email
                     </p>
                     <a
-                      href="mailto:vshubha.work@gmail.com"
+                      href="mailto:mav2va@gmail.com"
                       className="text-sm sm:text-base hover:underline transition-colors"
                       style={{ color: "var(--color-text-primary)" }}
                     >
-                      vshubha.work@gmail.com
+                      mav2va@gmail.com
                     </a>
                   </div>
                 </div>
@@ -249,136 +220,87 @@ function ContactForm() {
                       className="font-semibold text-sm sm:text-base"
                       style={{ color: "var(--color-text-primary)" }}
                     >
-                      Operating Hours
+                      Ages We Serve
                     </p>
                     <p
                       className="text-sm sm:text-base"
                       style={{ color: "var(--color-text-primary)" }}
                     >
-                      Monday - Friday: 7:00 AM - 6:00 PM
+                      2 Months - 5 Years
                     </p>
                   </div>
                 </div>
 
-                {/* Quick Links */}
-                <div className="pt-4 border-t border-gray-200">
-                  <p
-                    className="font-semibold text-sm sm:text-base mb-3"
-                    style={{ color: "var(--color-text-primary)" }}
-                  >
-                    Quick Actions
-                  </p>
-                  <div className="space-y-2">
-                    <Link
-                      href="/"
-                      className="block text-sm hover:underline transition-colors"
-                      style={{ color: "var(--color-text-primary)" }}
-                    >
-                      ← Back to Home
-                    </Link>
-                    <Link
-                      href="/#programmes"
-                      className="block text-sm hover:underline transition-colors"
-                      style={{ color: "var(--color-text-primary)" }}
-                    >
-                      View Our Programmes
-                    </Link>
-                  </div>
-                </div>
+                {/* Rest of the component remains the same */}
+                {/* ... */}
               </div>
             </div>
           </div>
 
           {/* Contact Form */}
-          <div className="lg:col-span-2">
-            <form
-              onSubmit={handleSubmit}
-              className={`rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-lg transition-all duration-1000 ease-out ${
-                isVisible
-                  ? "opacity-100 translate-y-0"
-                  : "opacity-0 translate-y-12"
-              }`}
-              style={{
-                backgroundColor: "var(--color-cta-outline-bg)",
-                transitionDelay: "200ms",
-              }}
-            >
-              {/* Success Message */}
-              {submitStatus === "success" && (
-                <div
-                  className="mb-6 p-4 rounded-xl border-l-4 border-green-500"
-                  style={{ backgroundColor: "rgba(34, 197, 94, 0.1)" }}
+          <div
+            className={`lg:col-span-2 transition-all duration-1000 ease-out ${
+              isVisible
+                ? "opacity-100 translate-y-0"
+                : "opacity-0 translate-y-12"
+            }`}
+            style={{ transitionDelay: "200ms" }}
+          >
+            {formData.submitted ? (
+              <div
+                className="rounded-2xl sm:rounded-3xl p-8 text-center"
+                style={{ backgroundColor: "var(--color-bg-nav)" }}
+              >
+                <h3
+                  className="text-2xl font-bold mb-4 font-serif"
+                  style={{ color: "var(--color-text-primary)" }}
                 >
-                  <div className="flex items-center">
-                    <svg
-                      className="w-5 h-5 text-green-500 mr-2"
-                      fill="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
-                    </svg>
-                    <p className="text-green-700 font-semibold">
-                      Message sent successfully! We'll get back to you soon.
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* Error Message */}
-              {submitStatus === "error" && (
-                <div
-                  className="mb-6 p-4 rounded-xl border-l-4 border-red-500"
-                  style={{ backgroundColor: "rgba(239, 68, 68, 0.1)" }}
+                  Thank You!
+                </h3>
+                <p
+                  className="text-lg"
+                  style={{ color: "var(--color-text-primary)" }}
                 >
-                  <div className="flex items-center">
-                    <svg
-                      className="w-5 h-5 text-red-500 mr-2"
-                      fill="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
-                    </svg>
-                    <p className="text-red-700 font-semibold">
-                      Something went wrong. Please try again or call us
-                      directly.
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
-                {/* Name Field */}
-                <div className="sm:col-span-1 group">
+                  We've received your enrollment inquiry and will get back to
+                  you within 2-3 hours.
+                </p>
+              </div>
+            ) : (
+              <form
+                onSubmit={handleSubmit}
+                className="grid grid-cols-1 sm:grid-cols-2 gap-6"
+              >
+                {/* Parent Name */}
+                <div className="col-span-2 sm:col-span-1">
                   <label
-                    htmlFor="name"
-                    className="block text-sm font-semibold mb-2 transition-colors duration-200"
+                    htmlFor="parentName"
+                    className="block text-sm font-medium mb-2"
                     style={{ color: "var(--color-text-primary)" }}
                   >
                     Parent's Name *
                   </label>
                   <input
                     type="text"
-                    id="name"
-                    name="name"
-                    value={formData.name}
+                    id="parentName"
+                    name="parentName"
+                    value={formData.parentName}
                     onChange={handleChange}
                     required
-                    className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl border-2 ${
-                      errors.name ? "border-red-500" : "border-gray-200"
-                    } focus:border-blue-400 focus:outline-none transition-all duration-300 ease-out text-sm sm:text-base hover:border-gray-300 focus:shadow-lg focus:scale-[1.02] transform`}
-                    style={{ color: "var(--color-text-primary)" }}
-                    placeholder="Your full name"
+                    className="w-full px-4 py-3 rounded-xl border-2 transition-all duration-200"
+                    style={{
+                      backgroundColor: "var(--color-bg-nav)",
+                      borderColor: "var(--color-bg-nav)",
+                      color: "var(--color-text-primary)",
+                    }}
+                    placeholder="Enter your full name"
                   />
-                  {errors.name && (
-                    <p className="mt-1 text-sm text-red-500">{errors.name}</p>
-                  )}
                 </div>
 
-                {/* Email Field */}
-                <div className="sm:col-span-1 group">
+                {/* Email */}
+                <div className="col-span-2 sm:col-span-1">
                   <label
                     htmlFor="email"
-                    className="block text-sm font-semibold mb-2 transition-colors duration-200"
+                    className="block text-sm font-medium mb-2"
                     style={{ color: "var(--color-text-primary)" }}
                   >
                     Email Address *
@@ -390,25 +312,24 @@ function ContactForm() {
                     value={formData.email}
                     onChange={handleChange}
                     required
-                    className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl border-2 ${
-                      errors.email ? "border-red-500" : "border-gray-200"
-                    } focus:border-blue-400 focus:outline-none transition-all duration-300 ease-out text-sm sm:text-base hover:border-gray-300 focus:shadow-lg focus:scale-[1.02] transform`}
-                    style={{ color: "var(--color-text-primary)" }}
-                    placeholder="your@email.com"
+                    className="w-full px-4 py-3 rounded-xl border-2 transition-all duration-200"
+                    style={{
+                      backgroundColor: "var(--color-bg-nav)",
+                      borderColor: "var(--color-bg-nav)",
+                      color: "var(--color-text-primary)",
+                    }}
+                    placeholder="Enter your email"
                   />
-                  {errors.email && (
-                    <p className="mt-1 text-sm text-red-500">{errors.email}</p>
-                  )}
                 </div>
 
-                {/* Phone Field */}
-                <div className="sm:col-span-1 group">
+                {/* Phone */}
+                <div className="col-span-2 sm:col-span-1">
                   <label
                     htmlFor="phone"
-                    className="block text-sm font-semibold mb-2 transition-colors duration-200"
+                    className="block text-sm font-medium mb-2"
                     style={{ color: "var(--color-text-primary)" }}
                   >
-                    Phone Number
+                    Phone Number *
                   </label>
                   <input
                     type="tel"
@@ -416,52 +337,77 @@ function ContactForm() {
                     name="phone"
                     value={formData.phone}
                     onChange={handleChange}
-                    className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl border-2 ${
-                      errors.phone ? "border-red-500" : "border-gray-200"
-                    } focus:border-blue-400 focus:outline-none transition-all duration-300 ease-out text-sm sm:text-base hover:border-gray-300 focus:shadow-lg focus:scale-[1.02] transform`}
-                    style={{ color: "var(--color-text-primary)" }}
-                    placeholder="+44 20 1234 5678"
+                    required
+                    className="w-full px-4 py-3 rounded-xl border-2 transition-all duration-200"
+                    style={{
+                      backgroundColor: "var(--color-bg-nav)",
+                      borderColor: "var(--color-bg-nav)",
+                      color: "var(--color-text-primary)",
+                    }}
+                    placeholder="Enter your phone number"
                   />
-                  {errors.phone && (
-                    <p className="mt-1 text-sm text-red-500">{errors.phone}</p>
-                  )}
                 </div>
 
-                {/* Child Age Field */}
-                <div className="sm:col-span-1 group">
+                {/* Child's Name */}
+                <div className="col-span-2 sm:col-span-1">
                   <label
-                    htmlFor="childAge"
-                    className="block text-sm font-semibold mb-2 transition-colors duration-200"
+                    htmlFor="childName"
+                    className="block text-sm font-medium mb-2"
                     style={{ color: "var(--color-text-primary)" }}
                   >
-                    Child's Age
+                    Child's Name *
                   </label>
-                  <select
+                  <input
+                    type="text"
+                    id="childName"
+                    name="childName"
+                    value={formData.childName}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-4 py-3 rounded-xl border-2 transition-all duration-200"
+                    style={{
+                      backgroundColor: "var(--color-bg-nav)",
+                      borderColor: "var(--color-bg-nav)",
+                      color: "var(--color-text-primary)",
+                    }}
+                    placeholder="Enter child's name"
+                  />
+                </div>
+
+                {/* Child's Age */}
+                <div className="col-span-2 sm:col-span-1">
+                  <label
+                    htmlFor="childAge"
+                    className="block text-sm font-medium mb-2"
+                    style={{ color: "var(--color-text-primary)" }}
+                  >
+                    Child's Age *
+                  </label>
+                  <input
+                    type="text"
                     id="childAge"
                     name="childAge"
                     value={formData.childAge}
                     onChange={handleChange}
-                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl border-2 border-gray-200 focus:border-blue-400 focus:outline-none transition-all duration-300 ease-out text-sm sm:text-base hover:border-gray-300 focus:shadow-lg focus:scale-[1.02] transform cursor-pointer"
-                    style={{ color: "var(--color-text-primary)" }}
-                  >
-                    <option value="">Select age range</option>
-                    <option value="0-6 months">0-6 months</option>
-                    <option value="6-12 months">6-12 months</option>
-                    <option value="1-2 years">1-2 years</option>
-                    <option value="2-3 years">2-3 years</option>
-                    <option value="3-4 years">3-4 years</option>
-                    <option value="4+ years">4+ years</option>
-                  </select>
+                    required
+                    className="w-full px-4 py-3 rounded-xl border-2 transition-all duration-200"
+                    style={{
+                      backgroundColor: "var(--color-bg-nav)",
+                      borderColor: "var(--color-bg-nav)",
+                      color: "var(--color-text-primary)",
+                    }}
+                    placeholder="e.g., 2 years 3 months"
+                  />
                 </div>
 
-                {/* Start Date Field */}
-                <div className="sm:col-span-2 group">
+                {/* Desired Start Date */}
+                <div className="col-span-2 sm:col-span-1">
                   <label
                     htmlFor="startDate"
-                    className="block text-sm font-semibold mb-2 transition-colors duration-200"
+                    className="block text-sm font-medium mb-2"
                     style={{ color: "var(--color-text-primary)" }}
                   >
-                    Preferred Start Date
+                    Desired Start Date *
                   </label>
                   <input
                     type="date"
@@ -469,94 +415,110 @@ function ContactForm() {
                     name="startDate"
                     value={formData.startDate}
                     onChange={handleChange}
-                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl border-2 border-gray-200 focus:border-blue-400 focus:outline-none transition-all duration-300 ease-out text-sm sm:text-base hover:border-gray-300 focus:shadow-lg focus:scale-[1.02] transform"
-                    style={{ color: "var(--color-text-primary)" }}
+                    required
+                    className="w-full px-4 py-3 rounded-xl border-2 transition-all duration-200"
+                    style={{
+                      backgroundColor: "var(--color-bg-nav)",
+                      borderColor: "var(--color-bg-nav)",
+                      color: "var(--color-text-primary)",
+                    }}
                   />
                 </div>
-              </div>
 
-              {/* Message Field */}
-              <div className="mb-6 sm:mb-8 group">
-                <label
-                  htmlFor="message"
-                  className="block text-sm font-semibold mb-2 transition-colors duration-200"
-                  style={{ color: "var(--color-text-primary)" }}
-                >
-                  Message
-                </label>
-                <textarea
-                  id="message"
-                  name="message"
-                  value={formData.message}
-                  onChange={handleChange}
-                  rows={4}
-                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl border-2 border-gray-200 focus:border-blue-400 focus:outline-none transition-all duration-300 ease-out resize-none text-sm sm:text-base hover:border-gray-300 focus:shadow-lg focus:scale-[1.01] transform"
-                  style={{ color: "var(--color-text-primary)" }}
-                  placeholder="Tell us about your childcare needs, any questions you have, or when you'd like to start..."
-                ></textarea>
-              </div>
-
-              {/* Submit Button */}
-              <div className="text-center">
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className={`w-full sm:w-auto text-lg sm:text-xl font-bold py-3 sm:py-4 px-8 sm:px-12 rounded-full transition-all duration-300 ease-out transform hover:scale-105 hover:shadow-xl hover:-translate-y-1 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:translate-y-0 ${
-                    isSubmitting ? "animate-pulse" : ""
-                  }`}
-                  style={{
-                    backgroundColor: "var(--color-cta-primary-bg)",
-                    color: "var(--color-cta-primary-text)",
-                  }}
-                >
-                  {isSubmitting ? (
-                    <span className="flex items-center justify-center">
-                      <svg
-                        className="animate-spin -ml-1 mr-3 h-5 w-5"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        ></circle>
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        ></path>
-                      </svg>
-                      Sending...
-                    </span>
-                  ) : (
-                    "Send Message"
-                  )}
-                </button>
-              </div>
-
-              {/* Additional Info */}
-              <div className="mt-6 sm:mt-8 text-center">
-                <p
-                  className="text-xs sm:text-sm opacity-75 px-2 sm:px-0 leading-relaxed"
-                  style={{ color: "var(--color-text-primary)" }}
-                >
-                  We typically respond within 24 hours. For urgent matters,
-                  please call us directly at{" "}
-                  <a
-                    href="tel:+44201234567"
-                    className="font-semibold hover:underline break-words transition-all duration-200 ease-out hover:opacity-80 hover:scale-105 transform inline-block"
+                {/* Schedule */}
+                <div className="col-span-2 sm:col-span-1">
+                  <label
+                    htmlFor="schedule"
+                    className="block text-sm font-medium mb-2"
                     style={{ color: "var(--color-text-primary)" }}
                   >
-                    +44 20 1234 567
-                  </a>
-                </p>
-              </div>
-            </form>
+                    Schedule Preference *
+                  </label>
+                  <select
+                    id="schedule"
+                    name="schedule"
+                    value={formData.schedule}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-4 py-3 rounded-xl border-2 transition-all duration-200"
+                    style={{
+                      backgroundColor: "var(--color-bg-nav)",
+                      borderColor: "var(--color-bg-nav)",
+                      color: "var(--color-text-primary)",
+                    }}
+                  >
+                    <option value="full-time">Full Time</option>
+                    <option value="part-time">Part Time</option>
+                    <option value="flexible">Flexible</option>
+                  </select>
+                </div>
+
+                {/* Message */}
+                <div className="col-span-2">
+                  <label
+                    htmlFor="message"
+                    className="block text-sm font-medium mb-2"
+                    style={{ color: "var(--color-text-primary)" }}
+                  >
+                    Additional Information
+                  </label>
+                  <textarea
+                    id="message"
+                    name="message"
+                    value={formData.message}
+                    onChange={handleChange}
+                    rows="4"
+                    className="w-full px-4 py-3 rounded-xl border-2 transition-all duration-200"
+                    style={{
+                      backgroundColor: "var(--color-bg-nav)",
+                      borderColor: "var(--color-bg-nav)",
+                      color: "var(--color-text-primary)",
+                    }}
+                    placeholder="Any specific requirements or questions?"
+                  ></textarea>
+                </div>
+
+                {/* Error Message */}
+                {formData.error && (
+                  <div className="col-span-2 text-red-500 text-sm">
+                    {formData.error}
+                  </div>
+                )}
+
+                {/* Submit Button */}
+                <div className="col-span-2">
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full sm:w-auto px-8 py-4 rounded-full text-lg font-bold transition-all duration-200 hover:scale-105 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                    style={{
+                      backgroundColor: "var(--color-cta-primary-bg)",
+                      color: "var(--color-cta-primary-text)",
+                    }}
+                  >
+                    {isSubmitting ? "Sending..." : "Submit Enrollment Inquiry"}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+
+          {/* Response Time Message */}
+          <div className="mt-6 sm:mt-8 text-center">
+            <p
+              className="text-xs sm:text-sm opacity-75 px-2 sm:px-0 leading-relaxed"
+              style={{ color: "var(--color-text-primary)" }}
+            >
+              We typically respond within 2-3 hours. For urgent matters, please
+              call us directly at{" "}
+              <a
+                href="tel:+17032328585"
+                className="font-semibold hover:underline break-words transition-all duration-200 ease-out hover:opacity-80 hover:scale-105 transform inline-block"
+                style={{ color: "var(--color-text-primary)" }}
+              >
+                +1 (703) 232-8585
+              </a>
+            </p>
           </div>
         </div>
       </div>

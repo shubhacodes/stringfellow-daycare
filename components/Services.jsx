@@ -4,6 +4,10 @@ import Image from "next/image";
 
 const serviceCircles = [
   {
+    title: "Ages\n2 Months - 5 Years",
+    color: "bg-indigo-400",
+  },
+  {
     title: "Homemade Meals",
     color: "bg-blue-600",
   },
@@ -30,6 +34,10 @@ const serviceCircles = [
   {
     title: "Loving Care",
     color: "bg-yellow-400",
+  },
+  {
+    title: "Kindergarten\nReadiness",
+    color: "bg-emerald-400",
   },
 ];
 

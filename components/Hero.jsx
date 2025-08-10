@@ -6,19 +6,19 @@ import Navigation from "./Navigation";
 function Hero() {
   return (
     <div
-      className="relative w-full min-h-screen flex items-center justify-center overflow-hidden"
+      className="relative w-full min-h-screen flex flex-col items-center justify-center overflow-hidden"
       style={{ backgroundColor: "var(--color-bg-page)" }}
     >
       <Navigation />
 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 lg:gap-x-2 grid lg:grid-cols-2 gap-4 lg:gap-8 items-center relative z-5 max-w-7xl animate-slideIn pt-24">
-        <div className="text-center lg:text-left animate-slideInLeft">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-4 lg:gap-8 items-center relative z-10 max-w-7xl animate-slideIn pt-20 sm:pt-24 lg:pt-28">
+        <div className="text-center lg:text-left animate-slideInLeft mt-4 sm:mt-0">
           <div
             className="mb-4 animate-fadeIn"
             style={{ animationDelay: "0.2s" }}
           >
             <span
-              className="text-sm sm:text-lg font-semibold px-4 py-2 rounded-full shadow-sm transition-all hover:scale-105"
+              className="text-sm sm:text-lg font-semibold px-4 py-2 rounded-full shadow-sm transition-all hover:scale-105 inline-block"
               style={{
                 color: "var(--color-text-primary)",
                 backgroundColor: "var(--color-bg-nav)",
@@ -67,7 +67,7 @@ function Hero() {
             staff.
           </p>
           <div
-            className="flex flex-col sm:flex-row gap-4 items-center lg:items-start animate-slideInLeft"
+            className="flex flex-col sm:flex-row gap-4 items-center justify-center lg:justify-start animate-slideInLeft"
             style={{ animationDelay: "0.8s" }}
           >
             <Link href="/contact">
