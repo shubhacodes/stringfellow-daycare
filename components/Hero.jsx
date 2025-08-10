@@ -78,7 +78,7 @@ function Hero() {
                   color: "var(--color-cta-primary-text)",
                 }}
               >
-                Let's chat
+                Let's talk
               </div>
             </Link>
             <Link href="/contact">
